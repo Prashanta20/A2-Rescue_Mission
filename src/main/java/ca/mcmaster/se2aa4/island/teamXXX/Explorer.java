@@ -26,7 +26,12 @@ public class Explorer implements IExplorerRaid {
     @Override
     public String takeDecision() {
         JSONObject decision = new JSONObject();
-        decision.put("action", "stop"); // we stop the exploration immediately
+        // decision.put("action", "echo");
+    
+        // // Example: Echo in the current heading direction
+        // JSONObject parameters = new JSONObject();
+        // parameters.put("direction", "E"); // Replace "E" with your current heading
+        // decision.put("parameters", parameters);
         logger.info("** Decision: {}",decision.toString());
         return decision.toString();
     }

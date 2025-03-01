@@ -11,6 +11,7 @@ import org.json.JSONTokener;
 public class Explorer implements IExplorerRaid {
 
     private final Logger logger = LogManager.getLogger();
+    DescionMaker descion_maker;
 
     @Override
     public void initialize(String s) {
@@ -21,17 +22,13 @@ public class Explorer implements IExplorerRaid {
         Integer batteryLevel = info.getInt("budget");
         logger.info("The drone is facing {}", direction);
         logger.info("Battery level is {}", batteryLevel);
+        DroneStats drone = new DroneStats(direction, batteryLevel);
+        descion_maker = new DescionMaker(drone);
     }
 
     @Override
     public String takeDecision() {
-        JSONObject decision = new JSONObject();
-        // decision.put("action", "echo");
-    
-        // // Example: Echo in the current heading direction
-        // JSONObject parameters = new JSONObject();
-        // parameters.put("direction", "E"); // Replace "E" with your current heading
-        // decision.put("parameters", parameters);
+        JSONObject decision = descion_maker.chooseAction();    
         logger.info("** Decision: {}",decision.toString());
         return decision.toString();
     }
@@ -46,6 +43,7 @@ public class Explorer implements IExplorerRaid {
         logger.info("The status of the drone is {}", status);
         JSONObject extraInfo = response.getJSONObject("extras");
         logger.info("Additional information received: {}", extraInfo);
+        descion_maker.setResponse(response);   
     }
 
     @Override

@@ -16,61 +16,106 @@ public class DescionMaker {
     private JSONObject currentDesicion;
     DroneStats drone;
 
-    public DescionMaker(DroneStats drone){
+    public DescionMaker(DroneStats drone) {
         this.drone = drone;
     }
-    
-    public JSONObject chooseAction(){
-        if (currentDesicion == null){
+
+    public JSONObject chooseAction() {
+        if (currentDesicion == null) {
             currentDesicion = new JSONObject();
             currentDesicion.put("action", "scan");
+            return currentDesicion;
         }
-        else if (drone.getBatterylevel() > drone.getBatteryCapacity()/2 ){
-            JSONObject extra = response.getJSONObject("extras");
-            if (currentDesicion.get("action").equals("scan")){
-                if (!extra.get("biomes").equals("OCEAN")){
-                    currentDesicion.put("action", "stop");
-                    return currentDesicion;
-                }
-                else{
-                    currentDesicion.put("action", "echo");
-                    JSONObject parameters = new JSONObject();
-                    parameters.put("direction", "S"); 
-                    currentDesicion.put("parameters", parameters);
-                }
-            }
-            else if (currentDesicion.get("action").equals("fly") || currentDesicion.get("action").equals("heading")) { 
-                currentDesicion.put("action", "scan");
-            }
+        logger.info("**BATTERY LEVEL: {}" + drone.getBatterylevel());
+        logger.info("**BATTERY CAp: {}" + drone.getBatteryCapacity());
+        boolean check = drone.getBatterylevel() > (drone.getBatteryCapacity() / 2);
+        logger.info("**BATTERY CHECK" + check);
+        if (drone.getBatterylevel() > (drone.getBatteryCapacity() / 2)) {
+            // if we have more than half the battery, continue exploring
+            exploring();
+        } else {
+            // stop right here so we can make it back
+            stop();
+        }
 
-            else if(currentDesicion.get("action").equals("echo")){
-                if (extra.get("found").equals("OUT_OF_RANGE")){
-                    currentDesicion.put("action", "fly");
-                }
-                //Ground was found in some range
-                else{
-                    if (drone.getDirection().equals("S")){
-                        currentDesicion.put("action", "fly");
-                    }
-                    else{
-                        currentDesicion.put("action", "heading");
-                        JSONObject parameters = new JSONObject();
-                        parameters.put("direction", "S"); 
-                        currentDesicion.put("parameters", parameters);
-                        drone.changeDirection("S");    
-                    }
-                }
-            }
-        }
         return currentDesicion;
+
     }
 
-    public void setResponse(JSONObject response){
+    // exploring helper
+    private void exploring() {
+        // Depending on previous move, we make move
+        String prevMove = currentDesicion.getString("action");
+        logger.info("**MOVE: {}" + prevMove);
+
+        if (prevMove.equals("scan")) {
+            // previous was scan
+            logger.info("**Is OCeaon: {}" + response.getJSONObject("extras").get("biomes"));
+            if (response.getJSONObject("extras").getJSONArray("biomes").getString(0).equals("OCEAN")) {
+                echo();
+            } else {
+                stop();
+            }
+
+        } else if (prevMove.equals("echo")) {
+            // previous was echo
+            if (response.getJSONObject("extras").get("found").equals("OUT_OF_RANGE")) {
+                fly();
+            } else {
+                if (drone.getDirection().equals("S")) {
+                    fly();
+                } else {
+                    heading();
+                }
+            }
+
+        } else if (prevMove.equals("fly")) {
+            // was fly
+            scan();
+        } else if (prevMove.equals("heading")) {
+            // was heading
+            fly();
+        } else {
+            // any other move
+        }
+
+    }
+
+    // Actions to perform
+    private void echo() {
+        currentDesicion.put("action", "echo");
+        JSONObject parameters = new JSONObject();
+        parameters.put("direction", "S");
+        currentDesicion.put("parameters", parameters);
+    }
+
+    private void scan() {
+        currentDesicion.put("action", "scan");
+    }
+
+    private void fly() {
+        currentDesicion.put("action", "fly");
+    }
+
+    private void heading() {
+        currentDesicion.put("action", "heading");
+        JSONObject parameters = new JSONObject();
+        parameters.put("direction", "S");
+        currentDesicion.put("parameters", parameters);
+        drone.changeDirection("S");
+    }
+
+    private void stop() {
+        currentDesicion.put("action", "stop");
+    }
+
+    // Getters and Setters
+    public void setResponse(JSONObject response) {
         this.response = response;
         changeDroneStats();
     }
 
-    private void changeDroneStats(){
+    private void changeDroneStats() {
         drone.decreaseBatteryLevel(response.getInt("cost"));
     }
 }

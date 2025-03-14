@@ -5,8 +5,9 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.json.JsonConfiguration;
 import org.json.JSONObject;
 
-import main.java.ca.mcmaster.se2aa4.island.teamXXX.GridSearch;
-import main.java.ca.mcmaster.se2aa4.island.teamXXX.SearchType;
+import ca.mcmaster.se2aa4.island.teamXXX.GridSearch;
+import ca.mcmaster.se2aa4.island.teamXXX.IslandFinder;
+
 import netscape.javascript.JSObject;
 
 import org.apache.logging.log4j.LogManager;
@@ -17,7 +18,9 @@ public class DescionMaker {
     private JSONObject response;
     private JSONObject currentDesicion;
     DroneStats drone;
-    public static boolean landFound = false;
+    private boolean landFound = false;
+    private boolean creekFound = false;
+    private boolean emergencySiteFound = false;
 
     public DescionMaker(DroneStats drone) {
         this.drone = drone;
@@ -29,24 +32,19 @@ public class DescionMaker {
             currentDesicion.put("action", "scan");
             return currentDesicion;
         }
-        logger.info("**BATTERY LEVEL: {}" + drone.getBatterylevel());
-        logger.info("**BATTERY Cap: {}" + drone.getBatteryCapacity());
-        boolean check = drone.getBatterylevel() > (drone.getBatteryCapacity() / 2);
-        logger.info("**BATTERY CHECK" + check);
+
         if (drone.getBatterylevel() > (drone.getBatteryCapacity() / 2)) {
             SearchType search;
-            if (landFound){
-                //Gridsearching method
-                search = new GridSearch(response, currentDesicion, drone);
-            }
-            else{
+            if (landFound) {
+                // Gridsearching method
+                search = new GridSearch(response, currentDesicion, drone, this);
+            } else {
                 // if we have more than half the battery, continue exploring
-                search = new IslandFinder(response, currentDesicion, drone);
+                search = new IslandFinder(response, currentDesicion, drone, this);
             }
             search.makeMove();
             currentDesicion = search.getDesicion();
-        } 
-        else {
+        } else {
             // stop right here so we can make it back
             stop();
         }
@@ -54,8 +52,13 @@ public class DescionMaker {
         return currentDesicion;
     }
 
+    // Helper
     private void stop() {
         currentDesicion.put("action", "stop");
+    }
+
+    private void changeDroneStats() {
+        drone.decreaseBatteryLevel(response.getInt("cost"));
     }
 
     // Getters and Setters
@@ -64,7 +67,24 @@ public class DescionMaker {
         changeDroneStats();
     }
 
-    private void changeDroneStats() {
-        drone.decreaseBatteryLevel(response.getInt("cost"));
+    public void setLandFound(boolean landFound) {
+        this.landFound = landFound;
     }
+
+    public boolean isCreekFound() {
+        return creekFound;
+    }
+
+    public void setCreekFound(boolean creekFound) {
+        this.creekFound = creekFound;
+    }
+
+    public boolean isEmergencySiteFound() {
+        return emergencySiteFound;
+    }
+
+    public void setEmergencySiteFound(boolean emergencySiteFound) {
+        this.emergencySiteFound = emergencySiteFound;
+    }
+
 }

@@ -3,13 +3,15 @@ package ca.mcmaster.se2aa4.island.teamXXX;
 import ca.mcmaster.se2aa4.island.teamXXX.DroneStats;
 import org.json.JSONObject;
 
-public class IslandFinder extends SearchType{
-    
-    public IslandFinder(JSONObject reponse, JSONObject currentDesicion, DroneStats drone){
+public class IslandFinder extends SearchType {
+    DescionMaker decsicion;
+
+    public IslandFinder(JSONObject reponse, JSONObject currentDesicion, DroneStats drone, DescionMaker decsicion) {
         this.response = reponse;
         this.currentDesicion = currentDesicion;
         this.drone = drone;
-    }    
+        this.decsicion = decsicion;
+    }
 
     @Override
     public void makeMove() {
@@ -23,8 +25,8 @@ public class IslandFinder extends SearchType{
             if (response.getJSONObject("extras").getJSONArray("biomes").getString(0).equals("OCEAN")) {
                 echo();
             } else {
-                stop();
-                //landFound = true;
+                // stop();
+                decsicion.setLandFound(true);
             }
 
         } else if (prevMove.equals("echo")) {
@@ -35,7 +37,7 @@ public class IslandFinder extends SearchType{
                 if (drone.getDirection().equals("S")) {
                     fly();
                 } else {
-                    heading();
+                    heading("S");
                 }
             }
 

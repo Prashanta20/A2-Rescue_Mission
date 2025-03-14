@@ -11,10 +11,10 @@ public abstract class SearchType {
     protected JSONObject response;
     protected JSONObject currentDesicion;
     protected DroneStats drone;
-    
+
     public abstract void makeMove();
 
-    public JSONObject getDesicion(){
+    public JSONObject getDesicion() {
         return currentDesicion;
     }
 
@@ -33,12 +33,13 @@ public abstract class SearchType {
         currentDesicion.put("action", "fly");
     }
 
-    protected void heading() {
+    protected void heading(String direction) {
+        drone.setPrevDirection(drone.getDirection());
         currentDesicion.put("action", "heading");
         JSONObject parameters = new JSONObject();
-        parameters.put("direction", "S");
+        parameters.put("direction", direction);
         currentDesicion.put("parameters", parameters);
-        drone.changeDirection("S");
+        drone.changeDirection(direction);
     }
 
     protected void stop() {

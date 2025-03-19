@@ -19,41 +19,213 @@ public class GridSearch extends SearchType {
 
     @Override
     public void makeMove() {
-        String prevMove = currentDesicion.getString("action");
+        /*
+         * String prevMove = currentDesicion.getString("action");
+         * logger.info("==========GRID SEARCHING ==========");
+         * 
+         * if ((decsicion.isCreekFound() == true) && (decsicion.isEmergencySiteFound()
+         * == true)) {
+         * // if we have found a creek and emergency site
+         * stop();
+         * } else {
+         * if (prevMove.equals("scan")) {
+         * // we just scanned, we can check if we are above ground or water
+         * if (isCreek()) {
+         * // found a creek
+         * logger.info("==========FOUND CREEK ==========");
+         * decsicion.setCreekFound(true);
+         * }
+         * if (isEmergencySite()) {
+         * // found a creek
+         * logger.info("==========FOUND EMERGENCY ==========");
+         * decsicion.setEmergencySiteFound(true);
+         * }
+         * 
+         * // TURNING
+         * if (isOcean()) {
+         * // flying over ocean
+         * // turn right
+         * String facing = drone.getDirection();
+         * 
+         * if (facing.equals("S") || facing.equals("N")) {
+         * // Facing east and over water, turn to south
+         * // look to see if there is land on right side still
+         * echo("E");
+         * // heading("E");
+         * } else if (facing.equals("E")) {
+         * // if are currently going east
+         * // middle of the turn
+         * if (drone.getPrevDirection().equals("N")) {
+         * // if we were north before
+         * heading("S");
+         * } else if (drone.getPrevDirection().equals("S")) {
+         * heading("N");
+         * }
+         * } else {
+         * // we are facing west
+         * stop();
+         * logger.info("************** STOPPING ***********");
+         * }
+         * 
+         * } else {
+         * // not over the ocean so fly
+         * fly();
+         * }
+         * } else if (prevMove.equals("echo")) {
+         * // previous move was echo
+         * // do something with echo where if we dont see any more island on the east
+         * side,
+         * // we need to turn around
+         * if (isOutOfRange()) {
+         * // no more island to East side
+         * heading("W");
+         * } else {
+         * // still more island left
+         * heading("E");
+         * }
+         * } else {
+         * // previous move is not scan so we scan
+         * scan();
+         * }
+         * }
+         * 
+         * // stop(); // remove this line
+         */
+
+        // String prevMove = currentDesicion.getString("action");
         logger.info("==========GRID SEARCHING ==========");
 
+        if ((decsicion.isCreekFound()) && (decsicion.isEmergencySiteFound())) {
+            // we found the creek and emergency site so we stop
+            stop();
+        } else {
+            // continue the search
+            search();
+        }
+
+    }
+
+    private void search() {
+        String prevMove = currentDesicion.getString("action"); // the move we made
+
         if (prevMove.equals("scan")) {
-            // we just scanned, we can check if we are above ground or water
+            // do something
 
-            // TURNING
+            // check for creek and emergency site
+            if (isCreek()) {
+                // found a creek
+                logger.info("==========FOUND CREEK ==========");
+                decsicion.setCreekFound(true);
+                decsicion.getReport().setCreekID(response.getJSONObject("extras").getJSONArray("creeks").getString(0));
+            }
+            if (isEmergencySite()) {
+                // found a creek
+                logger.info("==========FOUND EMERGENCY ==========");
+                decsicion.setEmergencySiteFound(true);
+                decsicion.getReport().setCreekID(response.getJSONObject("extras").getJSONArray("sites").getString(0));
+            }
+
+            // if we are over the ocean now
             if (isOcean()) {
-                // flying over ocean
-                // turn right
-                String facing = drone.getDirection();
-                if (facing.equals("S") || facing.equals("N")) {
-                    // Facing east and over water, turn to south
-                    heading("E");
-                } else if (facing.equals("E")) {
-                    // if are currently going east
-                    // middle of the turn
-                    if (drone.getPrevDirection().equals("N")) {
-                        // if we were north before
-                        heading("S");
-                    } else {
-                        heading("N");
-                    }
-                }
-
+                // we echo to make sure there is no more island
+                echo(drone.getDirection());
             } else {
+                // still over land, just fly
                 fly();
             }
-        } else {
+
+        } else if (prevMove.equals("echo")) {
+            // do something
+            logger.info("************** HERE ***********");
+            if (drone.getEchoDirection().equals("N") || drone.getEchoDirection().equals("S")) {
+                // north or south echo
+                if (isOutOfRange()) {
+                    // there is no more land left
+                    if (decsicion.isTurnAround()) {
+                        // we go west
+                        heading("W");
+                    } else {
+                        // we go east
+                        heading("E");
+                    }
+                } else {
+                    fly();
+                }
+
+            } else if (drone.getEchoDirection().equals("E")) {
+                // east echo
+                if (isOutOfRange()) {
+                    // if the echo was out of range
+                    // we reached the end
+                    heading("W");
+                    decsicion.setTurnAround(true);
+                } else {
+                    // still more of the map left
+                    fly();
+                }
+            } else if (drone.getEchoDirection().equals("W")) {
+                // west echo
+                if (isOutOfRange()) {
+                    logger.info("**************STOPPING ****************");
+                    stop();
+                } else {
+                    // still more of the map left
+                    fly();
+                }
+            } else {
+                // pass
+                fly();
+            }
+
+        } else if (prevMove.equals("fly")) {
+            // do something
             scan();
+        } else if (prevMove.equals("heading")) {
+            // do something
+            // if are currently going east
+            // middle of the turn
+            if (drone.getPrevDirection().equals("N")) {
+                // if we were north before
+                heading("S");
+            } else if (drone.getPrevDirection().equals("S")) {
+                // logger.info("************** HERE ***********");
+                heading("N");
+            } else {
+                // if we finished our turning
+                if (decsicion.isTurnAround()) {
+                    // we should be flying west now
+                    echo("W");
+                } else {
+                    // continue flying east
+                    echo("E");
+                }
+                // we have just completed the turn
+                // we may need to turn to the west now
+                // logger.info("************** STOPPING ***********");
+
+                // scan(); // stop For now
+            }
+        } else {
+            // do something
         }
-        stop(); // remove this line
     }
 
     private boolean isOcean() {
         return response.getJSONObject("extras").getJSONArray("biomes").getString(0).equals("OCEAN");
     }
+
+    private boolean isCreek() {
+        // if its not empty then it is a creek
+        return response.getJSONObject("extras").getJSONArray("creeks").length() > 0;
+    }
+
+    private boolean isEmergencySite() {
+        // if its not empty then it is a creek
+        return response.getJSONObject("extras").getJSONArray("sites").length() > 0;
+    }
+
+    private boolean isOutOfRange() {
+        return response.getJSONObject("extras").get("found").equals("OUT_OF_RANGE");
+    }
+
 }

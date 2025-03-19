@@ -17,10 +17,12 @@ public class DescionMaker {
     private final Logger logger = LogManager.getLogger();
     private JSONObject response;
     private JSONObject currentDesicion;
-    DroneStats drone;
+    private DroneStats drone;
     private boolean landFound = false;
     private boolean creekFound = false;
     private boolean emergencySiteFound = false;
+    private boolean turnAround = false;
+    private Report report = new Report();
 
     public DescionMaker(DroneStats drone) {
         this.drone = drone;
@@ -85,6 +87,18 @@ public class DescionMaker {
 
     public void setEmergencySiteFound(boolean emergencySiteFound) {
         this.emergencySiteFound = emergencySiteFound;
+    }
+
+    public boolean isTurnAround() {
+        return turnAround;
+    }
+
+    public void setTurnAround(boolean turnAround) {
+        this.turnAround = turnAround;
+    }
+
+    public Report getReport() {
+        return report;
     }
 
 }

@@ -48,7 +48,8 @@ public class Explorer implements IExplorerRaid {
 
     @Override
     public String deliverFinalReport() {
-        return "no creek found";
+        logger.info(descion_maker.getReport().toString());
+        return descion_maker.getReport().toString();
     }
 
 }

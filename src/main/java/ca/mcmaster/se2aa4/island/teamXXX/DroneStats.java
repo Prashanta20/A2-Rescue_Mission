@@ -4,6 +4,7 @@ public class DroneStats {
     private Integer batterylevel;
     private String direction;
     private String prevDirection;
+    private String echoDirection;
 
     private final Integer batteryCapacity;
 
@@ -39,5 +40,13 @@ public class DroneStats {
 
     public void setPrevDirection(String prevDirection) {
         this.prevDirection = prevDirection;
+    }
+
+    public String getEchoDirection() {
+        return echoDirection;
+    }
+
+    public void setEchoDirection(String echoDirection) {
+        this.echoDirection = echoDirection;
     }
 }

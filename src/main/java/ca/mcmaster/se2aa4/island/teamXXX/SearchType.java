@@ -18,10 +18,11 @@ public abstract class SearchType {
         return currentDesicion;
     }
 
-    protected void echo() {
+    protected void echo(String direction) {
+        drone.setEchoDirection(direction);
         currentDesicion.put("action", "echo");
         JSONObject parameters = new JSONObject();
-        parameters.put("direction", "S");
+        parameters.put("direction", direction);
         currentDesicion.put("parameters", parameters);
     }
 
@@ -30,6 +31,7 @@ public abstract class SearchType {
     }
 
     protected void fly() {
+        drone.setPrevDirection(drone.getDirection());
         currentDesicion.put("action", "fly");
     }
 

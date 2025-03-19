@@ -23,7 +23,7 @@ public class IslandFinder extends SearchType {
             // previous was scan
             logger.info("**Is OCeaon: {}" + response.getJSONObject("extras").get("biomes"));
             if (response.getJSONObject("extras").getJSONArray("biomes").getString(0).equals("OCEAN")) {
-                echo();
+                echo("S");
             } else {
                 // stop();
                 decsicion.setLandFound(true);

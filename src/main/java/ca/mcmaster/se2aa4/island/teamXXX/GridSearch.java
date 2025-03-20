@@ -122,7 +122,8 @@ public class GridSearch extends SearchType {
                 // found a creek
                 logger.info("==========FOUND EMERGENCY ==========");
                 decsicion.setEmergencySiteFound(true);
-                decsicion.getReport().setCreekID(response.getJSONObject("extras").getJSONArray("sites").getString(0));
+                decsicion.getReport()
+                        .setEmergencyID((response.getJSONObject("extras").getJSONArray("sites").getString(0)));
             }
 
             // if we are over the ocean now
@@ -140,7 +141,25 @@ public class GridSearch extends SearchType {
             if (drone.getEchoDirection().equals("N") || drone.getEchoDirection().equals("S")) {
                 // north or south echo
                 if (isOutOfRange()) {
+
                     // there is no more land left
+                    if (drone.getPrevDirection().equals("N") || drone.getPrevDirection().equals("S")) {
+                        // could have mor island on the east or west
+                        // pass
+                    } else {
+                        // previous direction was east or west so we are come from a turn
+                        if (decsicion.isTurnAround()) {
+                            // now want to stop
+                            logger.info("************** STOPPING ***********");
+                            stop();
+                            return;
+                        } else {
+                            // now we want set to be turning
+                            decsicion.setTurnAround(true);
+                        }
+
+                    }
+
                     if (decsicion.isTurnAround()) {
                         // we go west
                         heading("W");
@@ -152,26 +171,6 @@ public class GridSearch extends SearchType {
                     fly();
                 }
 
-            } else if (drone.getEchoDirection().equals("E")) {
-                // east echo
-                if (isOutOfRange()) {
-                    // if the echo was out of range
-                    // we reached the end
-                    heading("W");
-                    decsicion.setTurnAround(true);
-                } else {
-                    // still more of the map left
-                    fly();
-                }
-            } else if (drone.getEchoDirection().equals("W")) {
-                // west echo
-                if (isOutOfRange()) {
-                    logger.info("**************STOPPING ****************");
-                    stop();
-                } else {
-                    // still more of the map left
-                    fly();
-                }
             } else {
                 // pass
                 fly();
@@ -179,11 +178,30 @@ public class GridSearch extends SearchType {
 
         } else if (prevMove.equals("fly")) {
             // do something
-            scan();
+            if (decsicion.isFirstWTurn() == 1) {
+                // special turning
+                // heading to either North or South
+                heading(drone.getEchoDirection());
+                decsicion.setFirstWTurn(2);
+            } else {
+                // normal
+                scan();
+            }
+
         } else if (prevMove.equals("heading")) {
             // do something
             // if are currently going east
             // middle of the turn
+
+            if (drone.getDirection().equals("W")) {
+                if (decsicion.isFirstWTurn() == 0) {
+                    // this is our first W turn so go fly once
+                    fly();
+                    decsicion.setFirstWTurn(1);
+                    return;
+                } // otherwise contiinue normally
+            }
+
             if (drone.getPrevDirection().equals("N")) {
                 // if we were north before
                 heading("S");
@@ -192,13 +210,7 @@ public class GridSearch extends SearchType {
                 heading("N");
             } else {
                 // if we finished our turning
-                if (decsicion.isTurnAround()) {
-                    // we should be flying west now
-                    echo("W");
-                } else {
-                    // continue flying east
-                    echo("E");
-                }
+                echo(drone.getDirection());
                 // we have just completed the turn
                 // we may need to turn to the west now
                 // logger.info("************** STOPPING ***********");

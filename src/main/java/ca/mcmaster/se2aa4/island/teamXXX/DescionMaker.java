@@ -23,6 +23,7 @@ public class DescionMaker {
     private boolean emergencySiteFound = false;
     private boolean turnAround = false;
     private Report report = new Report();
+    private int firstWTurn = 0;
 
     public DescionMaker(DroneStats drone) {
         this.drone = drone;
@@ -35,7 +36,7 @@ public class DescionMaker {
             return currentDesicion;
         }
 
-        if (drone.getBatterylevel() > (drone.getBatteryCapacity() / 2)) {
+        if (drone.getBatterylevel() > (drone.getBatteryCapacity() / 5)) {
             SearchType search;
             if (landFound) {
                 // Gridsearching method
@@ -48,6 +49,7 @@ public class DescionMaker {
             currentDesicion = search.getDesicion();
         } else {
             // stop right here so we can make it back
+            logger.info("___________No More Power_______");
             stop();
         }
 
@@ -99,6 +101,14 @@ public class DescionMaker {
 
     public Report getReport() {
         return report;
+    }
+
+    public int isFirstWTurn() {
+        return firstWTurn;
+    }
+
+    public void setFirstWTurn(int firstWTurn) {
+        this.firstWTurn = firstWTurn;
     }
 
 }

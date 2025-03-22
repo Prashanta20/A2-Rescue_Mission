@@ -2,21 +2,13 @@ package ca.mcmaster.se2aa4.island.teamXXX;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.json.JsonConfiguration;
 import org.json.JSONObject;
 
-import ca.mcmaster.se2aa4.island.teamXXX.GridSearch;
-import ca.mcmaster.se2aa4.island.teamXXX.IslandFinder;
-
-import netscape.javascript.JSObject;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-public class DescionMaker {
+public class DecisionMaker {
+    private static DecisionMaker instance;
     private final Logger logger = LogManager.getLogger();
     private JSONObject response;
-    private JSONObject currentDesicion;
+    private JSONObject currentDecision;
     private DroneStats drone;
     private boolean landFound = false;
     private boolean creekFound = false;
@@ -25,40 +17,47 @@ public class DescionMaker {
     private Report report = new Report();
     private int firstWTurn = 0;
 
-    public DescionMaker(DroneStats drone) {
+    private DecisionMaker(DroneStats drone) {
         this.drone = drone;
     }
 
+    public static synchronized DecisionMaker getInstance(DroneStats drone) {
+        if (instance == null) {
+            instance = new DecisionMaker(drone);
+        }
+        return instance;
+    }
+
     public JSONObject chooseAction() {
-        if (currentDesicion == null) {
-            currentDesicion = new JSONObject();
-            currentDesicion.put("action", "scan");
-            return currentDesicion;
+        if (currentDecision == null) {
+            currentDecision = new JSONObject();
+            currentDecision.put("action", "scan");
+            return currentDecision;
         }
 
         if (drone.getBatterylevel() > (drone.getBatteryCapacity() / 5)) {
             SearchType search;
             if (landFound) {
                 // Gridsearching method
-                search = new GridSearch(response, currentDesicion, drone, this);
+                search = new GridSearch(response, currentDecision, drone, this);
             } else {
-                // if we have more than half the battery, continue exploring
-                search = new IslandFinder(response, currentDesicion, drone, this);
+                // if we have sufficient battery, continue exploring
+                search = new IslandFinder(response, currentDecision, drone, this);
             }
             search.makeMove();
-            currentDesicion = search.getDesicion();
+            currentDecision = search.getdecision();
         } else {
             // stop right here so we can make it back
             logger.info("___________No More Power_______");
             stop();
         }
 
-        return currentDesicion;
+        return currentDecision;
     }
 
     // Helper
     private void stop() {
-        currentDesicion.put("action", "stop");
+        currentDecision.put("action", "stop");
     }
 
     private void changeDroneStats() {

@@ -2,49 +2,47 @@ package ca.mcmaster.se2aa4.island.teamXXX;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.json.JsonConfiguration;
 import org.json.JSONObject;
-import ca.mcmaster.se2aa4.island.teamXXX.DroneStats;
 
 public abstract class SearchType {
     protected final Logger logger = LogManager.getLogger();
     protected JSONObject response;
-    protected JSONObject currentDesicion;
+    protected JSONObject currentDecision;
     protected DroneStats drone;
 
     public abstract void makeMove();
 
-    public JSONObject getDesicion() {
-        return currentDesicion;
+    public JSONObject getdecision() {
+        return currentDecision;
     }
 
-    protected void echo(String direction) {
+    protected void echo(String direction) { // method for echo function
         drone.setEchoDirection(direction);
-        currentDesicion.put("action", "echo");
+        currentDecision.put("action", "echo");
         JSONObject parameters = new JSONObject();
         parameters.put("direction", direction);
-        currentDesicion.put("parameters", parameters);
+        currentDecision.put("parameters", parameters);
     }
 
-    protected void scan() {
-        currentDesicion.put("action", "scan");
+    protected void scan() { // method for scan function
+        currentDecision.put("action", "scan");
     }
 
-    protected void fly() {
+    protected void fly() { // method for fly function
         drone.setPrevDirection(drone.getDirection());
-        currentDesicion.put("action", "fly");
+        currentDecision.put("action", "fly");
     }
 
-    protected void heading(String direction) {
+    protected void heading(String direction) { // method for changing direction
         drone.setPrevDirection(drone.getDirection());
-        currentDesicion.put("action", "heading");
+        currentDecision.put("action", "heading");
         JSONObject parameters = new JSONObject();
         parameters.put("direction", direction);
-        currentDesicion.put("parameters", parameters);
+        currentDecision.put("parameters", parameters);
         drone.changeDirection(direction);
     }
 
-    protected void stop() {
-        currentDesicion.put("action", "stop");
+    protected void stop() { // method for returning home
+        currentDecision.put("action", "stop");
     }
 }

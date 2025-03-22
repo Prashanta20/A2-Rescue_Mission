@@ -1,22 +1,21 @@
 package ca.mcmaster.se2aa4.island.teamXXX;
 
-import ca.mcmaster.se2aa4.island.teamXXX.DroneStats;
 import org.json.JSONObject;
 
 public class IslandFinder extends SearchType {
-    DescionMaker decsicion;
+    DecisionMaker decision;
 
-    public IslandFinder(JSONObject reponse, JSONObject currentDesicion, DroneStats drone, DescionMaker decsicion) {
+    public IslandFinder(JSONObject reponse, JSONObject currentdecision, DroneStats drone, DecisionMaker decision) {
         this.response = reponse;
-        this.currentDesicion = currentDesicion;
+        this.currentDecision = currentdecision;
         this.drone = drone;
-        this.decsicion = decsicion;
+        this.decision = decision;
     }
 
     @Override
     public void makeMove() {
         // Depending on previous move, we make move
-        String prevMove = currentDesicion.getString("action");
+        String prevMove = currentDecision.getString("action");
         logger.info("**MOVE: {}" + prevMove);
 
         if (prevMove.equals("scan")) {
@@ -26,7 +25,7 @@ public class IslandFinder extends SearchType {
                 echo("S");
             } else {
                 // stop();
-                decsicion.setLandFound(true);
+                decision.setLandFound(true);
             }
 
         } else if (prevMove.equals("echo")) {

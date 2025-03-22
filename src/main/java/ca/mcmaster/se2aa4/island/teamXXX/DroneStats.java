@@ -14,6 +14,8 @@ public class DroneStats {
         this.direction = direction;
     }
 
+    // Getters and setters
+
     public Integer getBatterylevel() {
         return batterylevel;
     }
@@ -27,7 +29,9 @@ public class DroneStats {
     }
 
     public void decreaseBatteryLevel(int decrement) {
-        batterylevel = batterylevel - decrement;
+        if ((batterylevel - decrement) >= 0) {
+            batterylevel = batterylevel - decrement;
+        }
     }
 
     public void changeDirection(String new_direction) {

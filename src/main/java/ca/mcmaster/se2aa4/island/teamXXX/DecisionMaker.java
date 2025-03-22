@@ -21,7 +21,7 @@ public class DecisionMaker {
         this.drone = drone;
     }
 
-    public static synchronized DecisionMaker getInstance(DroneStats drone) {
+    public static DecisionMaker getInstance(DroneStats drone) { // Singleton
         if (instance == null) {
             instance = new DecisionMaker(drone);
         }
